@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
+import { Navbar } from "@/components/shared/Navbar";
 
 export const metadata: Metadata = {
-  title: "Dashboard | Studio Space"
+  title: "StudioSpace | Creative Workspace & Production Studio Sharing",
 };
 
-export default function Layout({ children }: { children: React.ReactNode }) {
+export default function RootRouteLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div>
-      {children}
+    <div className="flex flex-col min-h-screen">
+      <Navbar />
+      <main className="flex-1">{children}</main>
     </div>
   );
 }

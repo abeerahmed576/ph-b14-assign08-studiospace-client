@@ -8,10 +8,13 @@ const dmSansHeading = DM_Sans({ subsets: ['latin'], variable: '--font-heading' }
 const publicSans = Public_Sans({ subsets: ['latin'], variable: '--font-sans' });
 
 export const metadata: Metadata = {
-  title: "Studio Space"
+  title: "StudioSpace | Creative Workspace & Production Studio Sharing",
+  description:
+    "Discover, filter, inspect availability, and reserve studio slots with transparent pricing and real-time booking management.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+
   return (
     <html
       lang="en"
