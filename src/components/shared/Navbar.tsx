@@ -9,7 +9,7 @@ import { UserDropdown } from "./UserDropdown";
 import { ThemeToggle } from "./ThemeToggle";
 import type { NavbarProps, NavItem } from "@/types/navbar";
 import { cn } from "@/lib/utils";
-import { authClient, useSession } from "@/lib/auth-client";
+import { signOut, useSession } from "@/lib/auth-client";
 
 const NAV_LINKS: NavItem[] = [
   { label: "Home", href: "/" },
@@ -28,7 +28,7 @@ export function Navbar({ user: propUser, onLogout: propOnLogout, className }: Na
       await propOnLogout();
       return;
     }
-    await authClient.signOut();
+    signOut();
     router.push("/");
     router.refresh();
   };
