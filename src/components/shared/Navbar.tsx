@@ -289,21 +289,21 @@ export function Navbar({
                     Dashboard
                   </Link>
                   <Link
-                    href="/add-studio"
+                    href="/dashboard/add-studio"
                     onClick={() => setIsMobileMenuOpen(false)}
                     className="px-3.5 py-2 text-sm text-foreground hover:bg-secondary rounded-lg transition-colors"
                   >
                     Add New Studio
                   </Link>
                   <Link
-                    href="/my-listings"
+                    href="/dashboard/my-listings"
                     onClick={() => setIsMobileMenuOpen(false)}
                     className="px-3.5 py-2 text-sm text-foreground hover:bg-secondary rounded-lg transition-colors"
                   >
                     My Studio Listings
                   </Link>
                   <Link
-                    href="/my-bookings"
+                    href="/dashboard/my-bookings"
                     onClick={() => setIsMobileMenuOpen(false)}
                     className="px-3.5 py-2 text-sm text-foreground hover:bg-secondary rounded-lg transition-colors"
                   >

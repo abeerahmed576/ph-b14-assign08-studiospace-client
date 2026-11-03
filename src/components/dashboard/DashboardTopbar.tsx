@@ -1,7 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { PanelLeft } from "lucide-react";
 import { UserDropdown } from "@/components/shared/UserDropdown";
@@ -47,30 +45,7 @@ export function DashboardTopbar({ onOpenMobileNav }: DashboardTopbarProps) {
         >
           <PanelLeft className="size-6 text-foreground" />
         </button>
-
-        {/* Placeholder keeps the logo truly centered when the button is hidden on desktop */}
         <div className="hidden md:block" aria-hidden="true" />
-
-        {/* ================= MIDDLE: StudioSpace Logo ================= */}
-        {/* <Link
-          href="/"
-          className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2.5 group outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg py-1"
-          aria-label="StudioSpace Home"
-        >
-          <div className="relative size-8 shrink-0 transition-transform duration-200 group-hover:scale-105">
-            <Image
-              src="/studiospace-icon.svg"
-              alt="StudioSpace Icon"
-              width={32}
-              height={32}
-              className="size-full object-contain"
-              priority
-            />
-          </div>
-          <span className="font-heading font-bold text-lg tracking-tight text-foreground select-none">
-            Studio<span className="text-accent italic font-bold">Space</span>
-          </span>
-        </Link> */}
 
         {/* ================= RIGHT: User Avatar & Dropdown ================= */}
         <div className="flex gap-2 items-center min-h-10">

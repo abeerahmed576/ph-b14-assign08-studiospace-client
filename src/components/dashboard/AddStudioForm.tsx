@@ -511,7 +511,7 @@ export function AddStudioForm() {
           Studio Images
         </legend>
         <p className="text-xs text-muted-foreground font-sans mt-0.5">
-          Select one or more images — they upload to imgbb when you submit.
+          Select one or more images
         </p>
 
         <label
@@ -636,9 +636,6 @@ export function AddStudioForm() {
         <legend className="text-lg font-heading font-semibold text-foreground">
           Host Details
         </legend>
-        <p className="text-xs text-muted-foreground font-sans -mt-2">
-          Shown from your StudioSpace account — verification handled by admins.
-        </p>
 
         {isSessionPending ? (
           <div className="space-y-3 animate-pulse">

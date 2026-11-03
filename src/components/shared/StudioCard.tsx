@@ -22,19 +22,21 @@ const CATEGORY_LABELS: Record<StudioCategory, string> = {
 export function StudioCard({ studio }: StudioCardProps) {
   const [imgError, setImgError] = useState(false);
   const studioId = studio._id || "";
-  const firstImage = studio.images && studio.images.length > 0 ? studio.images[0] : "";
-  const categoryLabel = CATEGORY_LABELS[studio.category] || studio.category || "Studio";
+  const firstImage =
+    studio.images && studio.images.length > 0 ? studio.images[0] : "";
+  const categoryLabel =
+    CATEGORY_LABELS[studio.category] || studio.category || "Studio";
 
   return (
     <article
       className={cn(
         "group h-full flex flex-col rounded-2xl border border-border bg-card",
         "shadow-xs hover:shadow-md hover:border-accent/40",
-        "transition-all duration-300 overflow-hidden"
+        "transition-all duration-300 overflow-hidden",
       )}
     >
       {/* ================= Gradual Shadowed Photo Header ================= */}
-      <div className="relative aspect-[4/3] w-full overflow-hidden bg-secondary">
+      <div className="relative aspect-4/3 w-full overflow-hidden bg-secondary">
         {firstImage && !imgError ? (
           <Image
             src={firstImage}
@@ -54,7 +56,7 @@ export function StudioCard({ studio }: StudioCardProps) {
 
         {/* Gradual Shadow Overlay for rich depth & contrast */}
         <div
-          className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent pointer-events-none"
+          className="absolute inset-0 bg-linear-to-t from-black/85 via-black/30 to-transparent pointer-events-none"
           aria-hidden="true"
         />
 
@@ -68,9 +70,7 @@ export function StudioCard({ studio }: StudioCardProps) {
           {/* Rating */}
           <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-background/90 text-foreground backdrop-blur-md border border-border/60 shadow-xs">
             <Star className="size-3.5 fill-[#C9A44C] text-[#C9A44C]" />
-            <span>
-              {typeof studio.rating === "number" ? studio.rating.toFixed(1) : "5.0"}
-            </span>
+            <span>{studio.rating ? studio.rating.toFixed(1) : "0.0"}</span>
           </span>
         </div>
 
@@ -80,7 +80,9 @@ export function StudioCard({ studio }: StudioCardProps) {
             <span className="text-2xl font-heading font-bold text-white tracking-tight">
               ${studio.hourlyRate}
             </span>
-            <span className="text-xs text-white/80 font-sans font-medium">/ hr</span>
+            <span className="text-xs text-white/80 font-sans font-medium">
+              / hr
+            </span>
           </div>
 
           {typeof studio.capacity === "number" && (
@@ -102,7 +104,9 @@ export function StudioCard({ studio }: StudioCardProps) {
           {/* Location */}
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-sans line-clamp-1">
             <MapPin className="size-3.5 shrink-0 text-accent" />
-            <span className="truncate">{studio.address || "Location available on request"}</span>
+            <span className="truncate">
+              {studio.address || "Location available on request"}
+            </span>
           </div>
 
           {/* Amenities snippet if available */}
@@ -131,7 +135,7 @@ export function StudioCard({ studio }: StudioCardProps) {
           className={cn(
             "w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-full",
             "border border-border bg-background hover:bg-primary hover:text-primary-foreground hover:border-transparent",
-            "text-foreground text-sm font-medium transition-all duration-200 shadow-2xs group/btn"
+            "text-foreground text-sm font-medium transition-all duration-200 shadow-2xs group/btn",
           )}
         >
           <span>View Details</span>
@@ -141,4 +145,3 @@ export function StudioCard({ studio }: StudioCardProps) {
     </article>
   );
 }
-
