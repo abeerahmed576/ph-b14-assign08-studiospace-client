@@ -28,7 +28,7 @@ function ToastViewport({ className, ...props }: ToastPrimitive.Viewport.Props) {
       data-slot="toast-viewport"
       className={cn(
         "pointer-events-none fixed top-4 right-4 z-50 flex flex-col gap-2 w-auto max-w-sm sm:w-full outline-none",
-        className
+        className,
       )}
       {...props}
     />
@@ -46,7 +46,7 @@ function Toast({ className, ...props }: ToastPrimitive.Root.Props) {
         "origin-top-right transition-all duration-300 ease-out",
         "data-starting-style:opacity-0 data-starting-style:-translate-y-4 data-starting-style:scale-95",
         "data-ending-style:opacity-0 data-ending-style:-translate-y-4 data-ending-style:scale-95",
-        className
+        className,
       )}
       {...props}
     />
@@ -67,7 +67,10 @@ function ToastTitle({ className, ...props }: ToastPrimitive.Title.Props) {
   return (
     <ToastPrimitive.Title
       data-slot="toast-title"
-      className={cn("text-sm font-semibold font-sans text-foreground leading-snug", className)}
+      className={cn(
+        "text-sm font-semibold font-sans text-foreground leading-snug",
+        className,
+      )}
       {...props}
     />
   );
@@ -80,7 +83,10 @@ function ToastDescription({
   return (
     <ToastPrimitive.Description
       data-slot="toast-description"
-      className={cn("text-xs text-muted-foreground font-sans mt-0.5 leading-relaxed", className)}
+      className={cn(
+        "text-xs text-muted-foreground font-sans mt-0.5 leading-relaxed",
+        className,
+      )}
       {...props}
     />
   );
@@ -97,7 +103,7 @@ function ToastClose({
       aria-label="Close notification"
       className={cn(
         "relative shrink-0 -mr-1 -mt-1 p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-ring",
-        className
+        className,
       )}
       {...props}
     >
@@ -141,7 +147,10 @@ function ToastIcon({ type }: { type: string | undefined }) {
 
   if (type === "loading") {
     return (
-      <span className="shrink-0 text-muted-foreground mt-0.5" aria-hidden="true">
+      <span
+        className="shrink-0 text-muted-foreground mt-0.5"
+        aria-hidden="true"
+      >
         <Loader2 className="size-5 animate-spin" />
       </span>
     );

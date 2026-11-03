@@ -18,7 +18,11 @@ const NAV_LINKS: NavItem[] = [
   { label: "About Us", href: "/about-us" },
 ];
 
-export function Navbar({ user: propUser, onLogout: propOnLogout, className }: NavbarProps) {
+export function Navbar({
+  user: propUser,
+  onLogout: propOnLogout,
+  className,
+}: NavbarProps) {
   const router = useRouter();
   const { data: session, isPending } = useSession();
   const currentUser = propUser !== undefined ? propUser : session?.user;
@@ -86,7 +90,7 @@ export function Navbar({ user: propUser, onLogout: propOnLogout, className }: Na
       className={cn(
         "sticky top-0 z-50 w-full bg-background/85 backdrop-blur-md border-b border-border transition-shadow duration-200",
         isScrolled && "shadow-xs",
-        className
+        className,
       )}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -109,7 +113,8 @@ export function Navbar({ user: propUser, onLogout: propOnLogout, className }: Na
                 />
               </div>
               <span className="font-heading font-bold text-xl sm:text-2xl tracking-tight text-foreground select-none">
-                Studio<span className="text-accent italic font-bold">Space</span>
+                Studio
+                <span className="text-accent italic font-bold">Space</span>
               </span>
             </Link>
           </div>
@@ -129,7 +134,7 @@ export function Navbar({ user: propUser, onLogout: propOnLogout, className }: Na
                     "relative px-3.5 py-2 text-sm font-sans transition-colors rounded-full",
                     active
                       ? "text-accent font-semibold"
-                      : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
+                      : "text-muted-foreground hover:text-foreground hover:bg-secondary/60",
                   )}
                   aria-current={active ? "page" : undefined}
                 >
@@ -152,7 +157,7 @@ export function Navbar({ user: propUser, onLogout: propOnLogout, className }: Na
             <ThemeToggle />
 
             {/* Desktop Auth State */}
-            <div className="hidden sm:flex items-center gap-2 min-h-[40px]">
+            <div className="hidden sm:flex items-center gap-2 min-h-10">
               {isPending && propUser === undefined ? (
                 <div className="flex items-center gap-2">
                   <div className="h-8 w-16 bg-secondary/70 animate-pulse rounded-full" />
@@ -169,7 +174,7 @@ export function Navbar({ user: propUser, onLogout: propOnLogout, className }: Na
                     className={cn(
                       "inline-flex items-center justify-center px-4 py-2 rounded-full",
                       "text-sm font-medium text-foreground hover:text-accent hover:bg-secondary/70",
-                      "transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      "transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
                     )}
                   >
                     Login
@@ -180,7 +185,7 @@ export function Navbar({ user: propUser, onLogout: propOnLogout, className }: Na
                     className={cn(
                       "inline-flex items-center justify-center gap-1.5 px-4.5 py-2 rounded-full",
                       "text-sm font-medium bg-primary text-primary-foreground hover:opacity-90",
-                      "transition-all duration-200 shadow-xs outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      "transition-all duration-200 shadow-xs outline-none focus-visible:ring-2 focus-visible:ring-ring",
                     )}
                   >
                     <span>Register</span>
@@ -196,9 +201,13 @@ export function Navbar({ user: propUser, onLogout: propOnLogout, className }: Na
               onClick={() => setIsMobileMenuOpen((prev) => !prev)}
               className={cn(
                 "md:hidden p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary",
-                "transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                "transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
               )}
-              aria-label={isMobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+              aria-label={
+                isMobileMenuOpen
+                  ? "Close navigation menu"
+                  : "Open navigation menu"
+              }
               aria-expanded={isMobileMenuOpen}
             >
               {isMobileMenuOpen ? (
@@ -226,14 +235,12 @@ export function Navbar({ user: propUser, onLogout: propOnLogout, className }: Na
                     "flex items-center justify-between px-3.5 py-2.5 rounded-xl text-base font-sans transition-colors",
                     active
                       ? "bg-secondary text-accent font-semibold border-l-3 border-accent"
-                      : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                      : "text-muted-foreground hover:text-foreground hover:bg-secondary/50",
                   )}
                   aria-current={active ? "page" : undefined}
                 >
                   <span>{link.label}</span>
-                  {active && (
-                    <span className="size-2 rounded-full bg-accent" />
-                  )}
+                  {active && <span className="size-2 rounded-full bg-accent" />}
                 </Link>
               );
             })}

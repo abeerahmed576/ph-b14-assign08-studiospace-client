@@ -69,17 +69,17 @@ export function UserDropdown({ user, onLogout }: UserDropdownProps) {
     },
     {
       label: "Add New Studio",
-      href: "/add-studio",
+      href: "/dashboard/add-studio",
       icon: PlusCircle,
     },
     {
       label: "My Studio Listings",
-      href: "/my-listings",
+      href: "/dashboard/my-listings",
       icon: Building2,
     },
     {
       label: "My Bookings",
-      href: "/my-bookings",
+      href: "/dashboard/my-bookings",
       icon: CalendarDays,
     },
   ];
