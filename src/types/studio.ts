@@ -1,8 +1,13 @@
-export type StudioCategory = "photo" | "video" | "lounge" | "music" | "workshop";
+export type StudioCategory =
+  | "photo"
+  | "video"
+  | "lounge"
+  | "music"
+  | "workshop";
 
 export interface StudioHost {
   name: string;
-  phone: string;
+  phone?: string;
   email: string;
 }
 
@@ -13,7 +18,7 @@ export interface StudioReview {
 }
 
 export interface Studio {
-  _id?: string;
+  _id: string;
   title: string;
   category: StudioCategory;
   hourlyRate: number;
@@ -25,6 +30,5 @@ export interface Studio {
   amenities: string[];
   overview: string[];
   reviews?: StudioReview | StudioReview[];
-  rating: number;
+  rating?: number;
 }
-
