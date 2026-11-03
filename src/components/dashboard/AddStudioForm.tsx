@@ -322,7 +322,7 @@ export function AddStudioForm() {
         },
       };
 
-      const res = await fetch(`${API_URL}/add-studio`, {
+      const res = await fetch(`${API_URL}/dashboard/add-studio`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
