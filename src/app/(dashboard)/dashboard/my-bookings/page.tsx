@@ -1,4 +1,9 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
+import {
+  MyBookingsGrid,
+  MyBookingsSkeleton,
+} from "@/components/dashboard/MyBookingsGrid";
 
 export const metadata: Metadata = {
   title: "My Bookings | StudioSpace",
@@ -14,6 +19,12 @@ export default function MyBookingsPage() {
         <p className="text-muted-foreground">
           View your upcoming and past studio reservations.
         </p>
+      </div>
+
+      <div className="mt-8">
+        <Suspense fallback={<MyBookingsSkeleton count={6} />}>
+          <MyBookingsGrid />
+        </Suspense>
       </div>
     </div>
   );

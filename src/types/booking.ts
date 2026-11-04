@@ -23,3 +23,12 @@ export interface BookingPayload {
   renter: Renter;
   studio: BookedStudio;
 }
+
+/** A booking as returned by the API. */
+export interface Booking {
+  _id: string;
+  bookingDate: string;
+  status: BookingStatus;
+  renter: Renter;
+  studio: BookedStudio;
+}
