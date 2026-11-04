@@ -3,11 +3,21 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { UploadCloud, Loader2, PlusCircle, X, ChevronDown } from "lucide-react";
+import {
+  UploadCloud,
+  Loader2,
+  PlusCircle,
+  SquarePen,
+  X,
+  ChevronDown,
+  AlertCircle,
+  RefreshCw,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { showToast } from "@/components/ui/toast";
+import { fetchStudioById, createStudio, updateStudio } from "@/lib/api/studios";
 import { useSession } from "@/lib/auth-client";
-import type { StudioCategory } from "@/types/studio";
+import type { Studio, StudioCategory } from "@/types/studio";
 import { cn } from "@/lib/utils";
 
 /* ------------------------------------------------------------------ */
@@ -24,8 +34,6 @@ const CATEGORIES: { value: StudioCategory; label: string }[] = [
 
 const IMGBB_UPLOAD_URL = `https://api.imgbb.com/1/upload?key=${process.env.NEXT_PUBLIC_IMGBB_API_KEY}`;
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
 const inputClass = cn(
   "w-full rounded-lg border border-border bg-background px-3.5 py-2.5",
   "text-sm font-sans text-foreground placeholder:text-muted-foreground",
@@ -38,11 +46,12 @@ const labelClass = "block text-sm font-medium font-sans text-foreground mb-1.5";
 const errorClass = "text-xs text-destructive mt-1";
 
 /**
- * An image selected by the user but not yet uploaded — held locally with a
- * preview object URL. Files are uploaded to imgbb only on form submission.
+ * An image entry in the form. `file` holds a locally chosen File that gets
+ * uploaded to imgbb on submission; `file: null` means an existing hosted
+ * image (from the studio record) that only needs to be kept or dropped.
  */
 interface SelectedImage {
-  file: File;
+  file: File | null;
   previewUrl: string;
 }
 
@@ -62,7 +71,7 @@ type FormErrors = Partial<
   >
 >;
 
-interface AddStudioPayload {
+interface StudioPayload {
   title: string;
   category: StudioCategory;
   hourlyRate: number;
@@ -127,20 +136,132 @@ export function AddStudioFormSkeleton() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Main form                                                           */
+/* Public entries                                                      */
 /* ------------------------------------------------------------------ */
 
 export function AddStudioForm() {
+  return <StudioForm mode="create" />;
+}
+
+/**
+ * Loads the studio by id and renders the form prefilled for updating.
+ * Handles its own loading / error states.
+ */
+export function UpdateStudioForm({ studioId }: { studioId: string }) {
+  const [studio, setStudio] = useState<Studio | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+
+  useEffect(() => {
+    let isCurrent = true;
+
+    const load = async () => {
+      try {
+        const data = await fetchStudioById(studioId);
+        if (isCurrent) {
+          setStudio(data);
+          setError(null);
+          setIsLoading(false);
+        }
+      } catch (err: unknown) {
+        if (isCurrent) {
+          setError(
+            err instanceof Error
+              ? err.message
+              : "An unexpected error occurred while loading this studio.",
+          );
+          setIsLoading(false);
+        }
+      }
+    };
+
+    load();
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [studioId, retryCount]);
+
+  if (isLoading) {
+    return <AddStudioFormSkeleton />;
+  }
+
+  if (error || !studio) {
+    return (
+      <div className="mt-8 flex flex-col items-center justify-center py-16 gap-3 text-center">
+        <span className="size-12 rounded-full bg-destructive/10 text-destructive flex items-center justify-center">
+          <AlertCircle className="size-6" aria-hidden="true" />
+        </span>
+        <p className="text-sm text-muted-foreground max-w-sm font-sans">
+          {error ?? "This studio could not be found."}
+        </p>
+        <button
+          type="button"
+          onClick={() => setRetryCount((prev) => prev + 1)}
+          className={cn(
+            "inline-flex items-center gap-2 px-5 py-2.5 rounded-full",
+            "border border-border bg-background text-foreground text-sm font-medium",
+            "hover:bg-secondary transition-colors cursor-pointer",
+            "outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          )}
+        >
+          <RefreshCw className="size-4" aria-hidden="true" />
+          <span>Try Again</span>
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <StudioForm mode="update" initialStudio={studio} studioId={studioId} />
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Shared studio form (create & update)                                */
+/* ------------------------------------------------------------------ */
+
+interface StudioFormProps {
+  mode: "create" | "update";
+  initialStudio?: Studio;
+  studioId?: string;
+}
+
+function StudioForm({ mode, initialStudio, studioId }: StudioFormProps) {
   const router = useRouter();
   const { data: session, isPending: isSessionPending } = useSession();
 
-  const [title, setTitle] = useState("");
-  const [category, setCategory] = useState<StudioCategory | "">("");
-  const [hourlyRate, setHourlyRate] = useState("");
-  const [securityDeposit, setSecurityDeposit] = useState("");
-  const [capacity, setCapacity] = useState("");
-  const [address, setAddress] = useState("");
-  const [imageFiles, setImageFiles] = useState<SelectedImage[]>([]);
+  const isUpdate = mode === "update";
+
+  const [title, setTitle] = useState(initialStudio?.title ?? "");
+  const [category, setCategory] = useState<StudioCategory | "">(
+    initialStudio?.category ?? "",
+  );
+  const [hourlyRate, setHourlyRate] = useState(
+    isUpdate && initialStudio?.hourlyRate != null
+      ? String(initialStudio.hourlyRate)
+      : "",
+  );
+  const [securityDeposit, setSecurityDeposit] = useState(
+    isUpdate && initialStudio?.securityDeposit != null
+      ? String(initialStudio.securityDeposit)
+      : "",
+  );
+  const [capacity, setCapacity] = useState(
+    isUpdate && initialStudio?.capacity != null
+      ? String(initialStudio.capacity)
+      : "",
+  );
+  const [address, setAddress] = useState(initialStudio?.address ?? "");
+  const [imageFiles, setImageFiles] = useState<SelectedImage[]>(() => {
+    if (isUpdate && initialStudio?.images?.length) {
+      return initialStudio.images
+        .filter(Boolean)
+        .map((url) => ({ file: null, previewUrl: url }));
+    }
+    return [];
+  });
   const [isUploadingImages, setIsUploadingImages] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageFilesRef = useRef<SelectedImage[]>([]);
@@ -153,13 +274,18 @@ export function AddStudioForm() {
   // Revoke any remaining preview object URLs when the form unmounts
   useEffect(() => {
     return () => {
-      imageFilesRef.current.forEach((img) =>
-        URL.revokeObjectURL(img.previewUrl),
-      );
+      imageFilesRef.current.forEach((img) => {
+        if (img.file) URL.revokeObjectURL(img.previewUrl);
+      });
     };
   }, []);
-  const [amenitiesText, setAmenitiesText] = useState("");
-  const [overviewText, setOverviewText] = useState("");
+
+  const [amenitiesText, setAmenitiesText] = useState(
+    initialStudio?.amenities?.join("\n") ?? "",
+  );
+  const [overviewText, setOverviewText] = useState(
+    initialStudio?.overview?.join("\n") ?? "",
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
 
@@ -202,7 +328,8 @@ export function AddStudioForm() {
   const removeImage = (previewUrl: string) => {
     setImageFiles((prev) => {
       const item = prev.find((img) => img.previewUrl === previewUrl);
-      if (item) URL.revokeObjectURL(item.previewUrl);
+      // Only locally created blobs are revoked; existing hosted URLs are not
+      if (item?.file) URL.revokeObjectURL(item.previewUrl);
       return prev.filter((img) => img.previewUrl !== previewUrl);
     });
   };
@@ -255,7 +382,9 @@ export function AddStudioForm() {
     if (Object.keys(nextErrors).length > 0) {
       showToast.error(
         "Please fix the highlighted fields",
-        `${Object.keys(nextErrors).length} field${Object.keys(nextErrors).length > 1 ? "s are" : " is"} invalid.`,
+        `${Object.keys(nextErrors).length} field${
+          Object.keys(nextErrors).length > 1 ? "s are" : " is"
+        } invalid.`,
       );
       return false;
     }
@@ -269,7 +398,17 @@ export function AddStudioForm() {
     if (!validate()) return;
 
     if (!user?.name || !user.email) return;
-    if (!process.env.NEXT_PUBLIC_IMGBB_API_KEY) {
+
+    // Images that are already hosted (existing listing images kept as-is)
+    const keptImageUrls = imageFiles
+      .filter((img) => !img.file)
+      .map((img) => img.previewUrl);
+    // Images the user picked locally in this session
+    const newImageFiles = imageFiles.filter(
+      (img): img is SelectedImage & { file: File } => img.file !== null,
+    );
+
+    if (newImageFiles.length > 0 && !process.env.NEXT_PUBLIC_IMGBB_API_KEY) {
       showToast.error(
         "Upload configuration missing",
         "Image upload key is not set. Please try again later.",
@@ -278,34 +417,42 @@ export function AddStudioForm() {
     }
 
     setIsSubmitting(true);
-    setIsUploadingImages(true);
+    if (newImageFiles.length > 0) setIsUploadingImages(true);
 
     try {
-      /* ------- 1. Upload selected images to imgbb ------- */
-      const results = await Promise.allSettled(
-        imageFiles.map((img) => uploadImageToImgbb(img.file)),
-      );
+      let imageUrls = keptImageUrls;
 
-      const imageUrls = results
-        .filter(
-          (result): result is PromiseFulfilledResult<string> =>
-            result.status === "fulfilled",
-        )
-        .map((result) => result.value);
-
-      const failedCount = results.length - imageUrls.length;
-
-      // Abort submission if any image failed — the listing must have all its images
-      if (failedCount > 0) {
-        showToast.error(
-          "Image upload failed",
-          `Could not upload ${failedCount} of ${results.length} image${results.length > 1 ? "s" : ""}. Please try submitting again.`,
+      /* ------- 1. Upload newly selected images to imgbb ------- */
+      if (newImageFiles.length > 0) {
+        const results = await Promise.allSettled(
+          newImageFiles.map((img) => uploadImageToImgbb(img.file)),
         );
-        return;
+
+        const uploadedUrls = results
+          .filter(
+            (result): result is PromiseFulfilledResult<string> =>
+              result.status === "fulfilled",
+          )
+          .map((result) => result.value);
+
+        const failedCount = results.length - uploadedUrls.length;
+
+        // Abort submission if any image failed — the listing must have all its images
+        if (failedCount > 0) {
+          showToast.error(
+            "Image upload failed",
+            `Could not upload ${failedCount} of ${results.length} image${
+              results.length > 1 ? "s" : ""
+            }. Please try submitting again.`,
+          );
+          return;
+        }
+
+        imageUrls = [...keptImageUrls, ...uploadedUrls];
       }
 
-      /* ------- 2. Create the studio listing ------- */
-      const payload: AddStudioPayload = {
+      /* ------- 2. Create or update the studio listing ------- */
+      const payload: StudioPayload = {
         title: title.trim(),
         category: category as StudioCategory,
         hourlyRate: Number(hourlyRate),
@@ -321,32 +468,27 @@ export function AddStudioForm() {
           email: user.email,
         },
       };
-
-      const res = await fetch(`${API_URL}/dashboard/add-studio`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        let message = `${res.status} ${res.statusText}`;
-        try {
-          const body = await res.json();
-          if (body?.message) message = String(body.message);
-        } catch {
-          /* keep status-text fallback */
-        }
-        throw new Error(message);
+      if (isUpdate) {
+        await updateStudio(studioId as string, payload);
+      } else {
+        await createStudio(payload);
       }
 
-      showToast.success(
-        "Studio added",
-        `"${payload.title}" is now listed on StudioSpace.`,
-      );
+      if (isUpdate) {
+        showToast.success(
+          "Studio updated",
+          `"${payload.title}" has been updated successfully.`,
+        );
+      } else {
+        showToast.success(
+          "Studio added",
+          `"${payload.title}" is now listed on StudioSpace.`,
+        );
+      }
       router.push("/dashboard/my-listings");
     } catch (error) {
       showToast.error(
-        "Could not add studio",
+        isUpdate ? "Could not update studio" : "Could not add studio",
         error instanceof Error
           ? error.message
           : "Something went wrong. Please try again.",
@@ -512,6 +654,7 @@ export function AddStudioForm() {
         </legend>
         <p className="text-xs text-muted-foreground font-sans mt-0.5">
           Select one or more images
+          {isUpdate ? " to add to the existing ones" : ""}
         </p>
 
         <label
@@ -551,10 +694,11 @@ export function AddStudioForm() {
               >
                 <Image
                   src={img.previewUrl}
-                  alt={img.file.name || "Studio image preview"}
+                  alt={img.file?.name || "Studio image"}
                   width={160}
                   height={160}
                   className="size-full object-cover"
+                  unoptimized
                 />
                 <button
                   type="button"
@@ -564,7 +708,7 @@ export function AddStudioForm() {
                     "text-foreground hover:text-destructive transition-colors cursor-pointer",
                     "outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   )}
-                  aria-label={`Remove image ${img.file.name || "preview"}`}
+                  aria-label={`Remove image ${img.file?.name || "preview"}`}
                 >
                   <X className="size-3.5" />
                 </button>
@@ -706,12 +850,16 @@ export function AddStudioForm() {
           ) : isSubmitting ? (
             <>
               <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-              <span>Adding studio…</span>
+              <span>{isUpdate ? "Saving changes…" : "Adding studio…"}</span>
             </>
           ) : (
             <>
-              <PlusCircle className="size-4" aria-hidden="true" />
-              <span>Add studio</span>
+              {isUpdate ? (
+                <SquarePen className="size-4" aria-hidden="true" />
+              ) : (
+                <PlusCircle className="size-4" aria-hidden="true" />
+              )}
+              <span>{isUpdate ? "Save changes" : "Add studio"}</span>
             </>
           )}
         </Button>
