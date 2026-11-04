@@ -17,7 +17,6 @@ export default async function UpdateStudioPage({
   params,
 }: UpdateStudioPageProps) {
   const { id } = await params;
-  console.log(id);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
