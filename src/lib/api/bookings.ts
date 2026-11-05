@@ -1,7 +1,20 @@
 import type { Booking, BookingPayload } from "@/types/booking";
 import { getTokenFromClient } from "../getTokenFromClient";
 
-const clientToken = await getTokenFromClient();
+/**
+ * Build request headers incl. the better-auth JWT when one is available.
+ * Token fetching is lazy & non-fatal (see getTokenFromClient).
+ */
+async function authHeaders(): Promise<Record<string, string>> {
+  const token = await getTokenFromClient();
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (token) {
+    headers.authorization = `Bearer ${token}`;
+  }
+  return headers;
+}
 
 /** Create a booking request for a studio on a date. */
 export async function createBooking(payload: BookingPayload): Promise<void> {
@@ -12,10 +25,7 @@ export async function createBooking(payload: BookingPayload): Promise<void> {
 
   const res = await fetch(endpoint, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      authorization: `Bearer ${clientToken}`,
-    },
+    headers: await authHeaders(),
     body: JSON.stringify(payload),
   });
 
@@ -41,10 +51,7 @@ export async function fetchBookingsByUser(userId: string): Promise<Booking[]> {
 
   const res = await fetch(endpoint, {
     method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      authorization: `Bearer ${clientToken}`,
-    },
+    headers: await authHeaders(),
     cache: "no-store",
   });
 
@@ -74,10 +81,7 @@ export async function cancelBooking(id: string): Promise<void> {
 
   const res = await fetch(endpoint, {
     method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-      authorization: `Bearer ${clientToken}`,
-    },
+    headers: await authHeaders(),
   });
 
   if (!res.ok) {

@@ -1,7 +1,20 @@
 import type { Studio } from "@/types/studio";
 import { getTokenFromClient } from "../getTokenFromClient";
 
-const clientToken = await getTokenFromClient();
+/**
+ * Build request headers incl. the better-auth JWT when one is available.
+ * Token fetching is lazy & non-fatal (see getTokenFromClient).
+ */
+async function authHeaders(): Promise<Record<string, string>> {
+  const token = await getTokenFromClient();
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (token) {
+    headers.authorization = `Bearer ${token}`;
+  }
+  return headers;
+}
 
 export async function fetchStudios(category?: string): Promise<Studio[]> {
   const baseURL = (
@@ -46,10 +59,7 @@ export async function fetchUserStudios(email: string): Promise<Studio[]> {
 
   const res = await fetch(endpoint, {
     method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      authorization: `Bearer ${clientToken}`,
-    },
+    headers: await authHeaders(),
     cache: "no-store",
   });
 
@@ -112,6 +122,34 @@ export async function fetchCarouselImages(): Promise<string[]> {
   return [];
 }
 
+/** Fetch top-rated studios for the homepage section. */
+export async function fetchTopRatedStudios(): Promise<Studio[]> {
+  const baseURL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").replace(/\/$/, "");
+  const endpoint = `${baseURL}/top-rated-studios`;
+
+  const res = await fetch(endpoint, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    throw new Error(`Failed to fetch top-rated studios (${res.status} ${res.statusText})`);
+  }
+
+  const data = await res.json();
+  if (Array.isArray(data)) {
+    return data;
+  }
+  if (data && typeof data === "object") {
+    if (Array.isArray(data.studios)) return data.studios;
+    if (Array.isArray(data.data)) return data.data;
+  }
+  return [];
+}
+
 /** Fetch a single studio by its id. */
 export async function fetchStudioById(id: string): Promise<Studio> {
   const baseURL = (
@@ -167,10 +205,7 @@ export async function createStudio(payload: StudioPayload): Promise<void> {
 
   const res = await fetch(endpoint, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      authorization: `Bearer ${clientToken}`,
-    },
+    headers: await authHeaders(),
     body: JSON.stringify(payload),
   });
 
@@ -197,10 +232,7 @@ export async function updateStudio(
   const endpoint = `${baseURL}/studios/${encodeURIComponent(id)}`;
   const res = await fetch(endpoint, {
     method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      authorization: `Bearer ${clientToken}`,
-    },
+    headers: await authHeaders(),
     body: JSON.stringify(payload),
   });
 
@@ -225,10 +257,7 @@ export async function deleteStudio(id: string): Promise<void> {
 
   const res = await fetch(endpoint, {
     method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-      authorization: `Bearer ${clientToken}`,
-    },
+    headers: await authHeaders(),
   });
 
   if (!res.ok) {
