@@ -66,6 +66,38 @@ export async function fetchUserStudios(email: string): Promise<Studio[]> {
   return [];
 }
 
+/** Fetch the hero carousel image URL list (string[]). */
+export async function fetchCarouselImages(): Promise<string[]> {
+  const baseURL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").replace(/\/$/, "");
+  const endpoint = `${baseURL}/studios-carousel`;
+
+  const res = await fetch(endpoint, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    throw new Error(`Failed to fetch carousel images (${res.status} ${res.statusText})`);
+  }
+
+  const data = await res.json();
+  if (Array.isArray(data)) {
+    return data.filter((item): item is string => typeof item === "string" && !!item);
+  }
+  if (data && typeof data === "object") {
+    if (Array.isArray(data.images)) {
+      return data.images.filter((item: unknown): item is string => typeof item === "string" && !!item);
+    }
+    if (Array.isArray(data.data)) {
+      return data.data.filter((item: unknown): item is string => typeof item === "string" && !!item);
+    }
+  }
+  return [];
+}
+
 /** Fetch a single studio by its id. */
 export async function fetchStudioById(id: string): Promise<Studio> {
   const baseURL = (
