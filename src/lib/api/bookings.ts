@@ -1,13 +1,21 @@
 import type { Booking, BookingPayload } from "@/types/booking";
+import { getTokenFromClient } from "../getTokenFromClient";
+
+const clientToken = await getTokenFromClient();
 
 /** Create a booking request for a studio on a date. */
 export async function createBooking(payload: BookingPayload): Promise<void> {
-  const baseURL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").replace(/\/$/, "");
+  const baseURL = (
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+  ).replace(/\/$/, "");
   const endpoint = `${baseURL}/bookings`;
 
   const res = await fetch(endpoint, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      authorization: `Bearer ${clientToken}`,
+    },
     body: JSON.stringify(payload),
   });
 
@@ -26,19 +34,24 @@ export async function createBooking(payload: BookingPayload): Promise<void> {
 
 /** Fetch all bookings made by the given renter (better-auth user id). */
 export async function fetchBookingsByUser(userId: string): Promise<Booking[]> {
-  const baseURL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").replace(/\/$/, "");
+  const baseURL = (
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+  ).replace(/\/$/, "");
   const endpoint = `${baseURL}/bookings/${encodeURIComponent(userId)}`;
 
   const res = await fetch(endpoint, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
+      authorization: `Bearer ${clientToken}`,
     },
     cache: "no-store",
   });
 
   if (!res.ok) {
-    throw new Error(`Failed to fetch your bookings (${res.status} ${res.statusText})`);
+    throw new Error(
+      `Failed to fetch your bookings (${res.status} ${res.statusText})`,
+    );
   }
 
   const data = await res.json();
@@ -54,12 +67,17 @@ export async function fetchBookingsByUser(userId: string): Promise<Booking[]> {
 
 /** Cancel a booking by id (DELETE). Throws with a readable message on failure. */
 export async function cancelBooking(id: string): Promise<void> {
-  const baseURL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").replace(/\/$/, "");
+  const baseURL = (
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+  ).replace(/\/$/, "");
   const endpoint = `${baseURL}/bookings/${encodeURIComponent(id)}`;
 
   const res = await fetch(endpoint, {
     method: "DELETE",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      authorization: `Bearer ${clientToken}`,
+    },
   });
 
   if (!res.ok) {

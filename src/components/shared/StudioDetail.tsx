@@ -376,7 +376,7 @@ function BookingModal({ studio, onClose }: BookingModalProps) {
             <label htmlFor="booking-date" className={labelClass}>
               Booking date <span className="text-destructive">*</span>
             </label>
-            <div className="relative">
+            <div>
               <input
                 id="booking-date"
                 type="date"
@@ -388,10 +388,6 @@ function BookingModal({ studio, onClose }: BookingModalProps) {
                 }}
                 aria-invalid={!!dateError}
                 className={cn(inputClass, "pr-10")}
-              />
-              <CalendarDays
-                className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground"
-                aria-hidden="true"
               />
             </div>
             {dateError && <p className={errorClass}>{dateError}</p>}

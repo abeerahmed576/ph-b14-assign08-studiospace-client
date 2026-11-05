@@ -1,4 +1,7 @@
 import type { Studio } from "@/types/studio";
+import { getTokenFromClient } from "../getTokenFromClient";
+
+const clientToken = await getTokenFromClient();
 
 export async function fetchStudios(category?: string): Promise<Studio[]> {
   const baseURL = (
@@ -45,6 +48,7 @@ export async function fetchUserStudios(email: string): Promise<Studio[]> {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
+      authorization: `Bearer ${clientToken}`,
     },
     cache: "no-store",
   });
@@ -68,7 +72,9 @@ export async function fetchUserStudios(email: string): Promise<Studio[]> {
 
 /** Fetch the hero carousel image URL list (string[]). */
 export async function fetchCarouselImages(): Promise<string[]> {
-  const baseURL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").replace(/\/$/, "");
+  const baseURL = (
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+  ).replace(/\/$/, "");
   const endpoint = `${baseURL}/studios-carousel`;
 
   const res = await fetch(endpoint, {
@@ -80,19 +86,27 @@ export async function fetchCarouselImages(): Promise<string[]> {
   });
 
   if (!res.ok) {
-    throw new Error(`Failed to fetch carousel images (${res.status} ${res.statusText})`);
+    throw new Error(
+      `Failed to fetch carousel images (${res.status} ${res.statusText})`,
+    );
   }
 
   const data = await res.json();
   if (Array.isArray(data)) {
-    return data.filter((item): item is string => typeof item === "string" && !!item);
+    return data.filter(
+      (item): item is string => typeof item === "string" && !!item,
+    );
   }
   if (data && typeof data === "object") {
     if (Array.isArray(data.images)) {
-      return data.images.filter((item: unknown): item is string => typeof item === "string" && !!item);
+      return data.images.filter(
+        (item: unknown): item is string => typeof item === "string" && !!item,
+      );
     }
     if (Array.isArray(data.data)) {
-      return data.data.filter((item: unknown): item is string => typeof item === "string" && !!item);
+      return data.data.filter(
+        (item: unknown): item is string => typeof item === "string" && !!item,
+      );
     }
   }
   return [];
@@ -153,7 +167,10 @@ export async function createStudio(payload: StudioPayload): Promise<void> {
 
   const res = await fetch(endpoint, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      authorization: `Bearer ${clientToken}`,
+    },
     body: JSON.stringify(payload),
   });
 
@@ -180,7 +197,10 @@ export async function updateStudio(
   const endpoint = `${baseURL}/studios/${encodeURIComponent(id)}`;
   const res = await fetch(endpoint, {
     method: "PATCH",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      authorization: `Bearer ${clientToken}`,
+    },
     body: JSON.stringify(payload),
   });
 
@@ -207,6 +227,7 @@ export async function deleteStudio(id: string): Promise<void> {
     method: "DELETE",
     headers: {
       "Content-Type": "application/json",
+      authorization: `Bearer ${clientToken}`,
     },
   });
 
